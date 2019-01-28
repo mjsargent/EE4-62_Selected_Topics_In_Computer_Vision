@@ -1,6 +1,6 @@
-clear all; close all; clc;
+clear all; close all; 
 warning('off','all');
-init;
+init;clc;
 rng(1)
 showImg = 0; % Show training & testing images and their image feature vector (histogram representation)
 PHOW_Sizes = [4 8 10]; % Multi-resolution, these values determine the scale of each layer.
@@ -43,7 +43,7 @@ disp('Building visual codebook...')
 desc_sel = single(vl_colsubset(cat(2,desc_tr{:}), 10e4)); % Randomly select 100k SIFT descriptors for clustering
 % K-means clustering
 no_kmeans_initialisations = 5;
-vocab_sizes = [5,10,20,50,100,200,500,1000];
+vocab_sizes = [5,10,20,50,100,200,500,1000,2000];
 results_store = zeros(2,no_kmeans_initialisations,length(vocab_sizes)); % [knn, svm],[no kmeans inits],[vocab_sizes]
 time_store = zeros(no_kmeans_initialisations,length(vocab_sizes));
 vocab_idx = 1;

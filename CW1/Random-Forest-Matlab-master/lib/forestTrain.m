@@ -35,9 +35,8 @@ function model = forestTrain(X, Y, opts)
 
     treeModels= cell(1, numTrees);
     for i=1:numTrees
-        
-        treeModels{i} = treeTrain(X, Y, opts);
-        
+        bagIdxs = randi([1,size(X,1)],opts.bagSizes,1); % added for bagging (PM)
+        treeModels{i} = treeTrain(X(bagIdxs,:), Y(bagIdxs), opts);
         % print info if verbose
         if verbose
             p10= floor(numTrees/10);

@@ -16,7 +16,8 @@ numLeafs= (nd+1)/2;
 
 Yhard= zeros(N, 1);
 u= model.classes;
-if nargout>1, Ysoft= zeros(N, length(u)); end
+
+if nargout>1, Ysoft= zeros(N, 10); end %length(u) CHANGED
 
 % if we can afford to store as non-sparse (100MB array, say), it is
 % slightly faster.
@@ -50,12 +51,13 @@ for n= (nd+1)/2 : nd
     ff= find(dataix(:, n)==1);
     
     hc= model.leafdist(n - (nd+1)/2 + 1, :);
+    hc_new = zeros(1,10); % ADDED
     vm= max(hc);
     miopt= find(hc==vm);
     mi= miopt(randi(length(miopt), 1)); %choose a class arbitrarily if ties exist
     Yhard(ff)= u(mi);
-    
+    hc_new(u) = hc; % ADDED
     if nargout > 1
-        Ysoft(ff, :)= repmat(hc, length(ff), 1);
+        Ysoft(ff, :)= repmat(hc_new, length(ff), 1); % CHANGED
     end
 end
