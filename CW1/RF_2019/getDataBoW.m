@@ -52,7 +52,8 @@ for vocab_size = vocab_sizes
         disp(['Loop: vocab_size = ',num2str(vocab_size),', kmeans_init = ',num2str(kmeans_init)])
         tic % start timer
         [~, words] = kmeans(desc_sel', vocab_size);
-        time_stores(kmeans_init,vocab_idx) = toc(tic);
+        elapsed_time = toc; % stop timer
+        time_stores(kmeans_init,vocab_idx) = elapsed_time;
         %disp('Encoding Training Images...')
         bags_of_words_training = zeros(vocab_size,150); % 150 = 10 classes * 15 images per class
         imTrack = 1;
@@ -115,14 +116,15 @@ for vocab_size = vocab_sizes
         knn_idx = knnsearch(bags_of_words_training', bags_of_words_testing');
         true_class_vector = reshape((ones(10,15).*[1:10]')',[150,1]);
         predicted_class_vector = true_class_vector(knn_idx);
-        results_knn = sum(~logical(true_class_vector-predicted_class_vector))/length(true_class_vector)
+        results_knn = sum(~logical(true_class_vector-predicted_class_vector))/length(true_class_vector);
         results_store(1,kmeans_init,vocab_idx) = results_knn;
         % linear SVM classification
         %disp('Performing SVM classification..')
         svm_model = fitcecoc(bags_of_words_training',true_class_vector,'Learners','linear');
         predicted_class_vector = predict(svm_model,bags_of_words_testing');
-        results_svm = sum(~logical(true_class_vector-predicted_class_vector))/length(true_class_vector)
+        results_svm = sum(~logical(true_class_vector-predicted_class_vector))/length(true_class_vector);
         results_store(2,kmeans_init,vocab_idx) = results_svm;
+        disp(['     Time = ',num2str(elapsed_time),', kNN = ',num2str(results_knn),', SVM = ',num2str(results_svm)])
     end
     vocab_idx = vocab_idx + 1;
 end
