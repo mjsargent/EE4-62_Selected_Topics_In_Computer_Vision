@@ -45,7 +45,7 @@ desc_sel = single(vl_colsubset(cat(2,desc_tr{:}), 10e4)); % Randomly select 100k
 no_kmeans_initialisations = 5;
 vocab_sizes = [5,10,20,50,100,200,500,1000];
 results_store = zeros(2,no_kmeans_initialisations,length(vocab_sizes)); % [knn, svm],[no kmeans inits],[vocab_sizes]
-time_stores = zeros(no_kmeans_initialisations,length(vocab_sizes));
+time_store = zeros(no_kmeans_initialisations,length(vocab_sizes));
 vocab_idx = 1;
 for vocab_size = vocab_sizes
     for kmeans_init = 1:no_kmeans_initialisations
@@ -53,7 +53,7 @@ for vocab_size = vocab_sizes
         tic % start timer
         [~, words] = kmeans(desc_sel', vocab_size);
         elapsed_time = toc; % stop timer
-        time_stores(kmeans_init,vocab_idx) = elapsed_time;
+        time_store(kmeans_init,vocab_idx) = elapsed_time;
         %disp('Encoding Training Images...')
         bags_of_words_training = zeros(vocab_size,150); % 150 = 10 classes * 15 images per class
         imTrack = 1;
@@ -128,3 +128,4 @@ for vocab_size = vocab_sizes
     end
     vocab_idx = vocab_idx + 1;
 end
+save('BoW_sweep_results.mat','results_store','time_store')
