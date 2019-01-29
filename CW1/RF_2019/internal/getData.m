@@ -54,6 +54,7 @@ for class = 1:10
         for k = 1:length(closest_words)
             bags_of_words_training(closest_words(k),imTrack) = bags_of_words_training(closest_words(k),imTrack) + 1;
         end
+        bags_of_words_training(:,imTrack) = bags_of_words_training(:,imTrack)/length(closest_words);
         imTrack = imTrack + 1;
     end
 end
@@ -102,6 +103,7 @@ for class = 1:10
         for k = 1:length(closest_words)
             bags_of_words_testing(closest_words(k),imTrack) = bags_of_words_testing(closest_words(k),imTrack) + 1;
         end
+        bags_of_words_testing(:,imTrack) = bags_of_words_testing(:,imTrack)/length(closest_words);
         imTrack = imTrack + 1;
     end
 end
