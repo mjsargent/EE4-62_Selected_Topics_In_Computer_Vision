@@ -8,8 +8,8 @@ vocab_size = 100;
 % choose tree options
 forest_options = struct;
 forest_options.depth = 5;
-forest_options.numTrees = 1000;
-forest_options.numSplits = 50;
+forest_options.numTrees = 10000;
+forest_options.numSplits = 8;
 forest_options.verbose = true; % outputs training update
 forest_options.classifierId = 1;
 forest_options.classifierCommitFirst = false;

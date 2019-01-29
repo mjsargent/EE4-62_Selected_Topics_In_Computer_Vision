@@ -38,45 +38,9 @@ for c = 1:length(classList)
         [~, desc_tr{c,i}] = vl_phow(single(I),'Sizes',PHOW_Sizes,'Step',PHOW_Step); %  extracts PHOW features (multi-scaled Dense SIFT)
     end
 end
-% Build visual vocabulary (codebook) for 'Bag-of-Words method'
-disp('Building visual codebook...')
-desc_sel = single(vl_colsubset(cat(2,desc_tr{:}), 10e4)); % Randomly select 100k SIFT descriptors for clustering
-% K-means clustering
-no_kmeans_initialisations = 5;
-vocab_sizes = [5,10,20,50,100,200,500,1000,2000];
-results_store = zeros(2,no_kmeans_initialisations,length(vocab_sizes)); % [knn, svm],[no kmeans inits],[vocab_sizes]
-time_store = zeros(no_kmeans_initialisations,length(vocab_sizes));
-vocab_idx = 1;
-for vocab_size = vocab_sizes
-    for kmeans_init = 1:no_kmeans_initialisations
-        disp(['Loop: vocab_size = ',num2str(vocab_size),', kmeans_init = ',num2str(kmeans_init)])
-        tic % start timer
-        [~, words] = kmeans(desc_sel', vocab_size);
-        elapsed_time = toc; % stop timer
-        time_store(kmeans_init,vocab_idx) = elapsed_time;
-        %disp('Encoding Training Images...')
-        bags_of_words_training = zeros(vocab_size,150); % 150 = 10 classes * 15 images per class
-        imTrack = 1;
-        % Vector Quantisation (training images)
-        for class = 1:10
-            for image = 1:15
-                image_descriptors = desc_tr(class,image);
-                image_descriptors = image_descriptors{1};
-                closest_words = knnsearch(words,image_descriptors');
-                for k = 1:length(closest_words)
-                    bags_of_words_training(closest_words(k),imTrack) = bags_of_words_training(closest_words(k),imTrack) + 1;
-                end
-                bags_of_words_training(:,imTrack) = bags_of_words_training(:,imTrack)/length(closest_words);
-                imTrack = imTrack + 1;
-            end
-        end
-        if showImg
-            figure('Units','normalized','Position',[.05 .1 .4 .9]);
-            suptitle('Test image samples');
-        end
-        % Load Images -> Description (Dense SIFT)
-        %disp('Processing testing images...');
-        cnt = 1;
+% Load Images -> Description (Dense SIFT)
+% disp('Processing testing images...');
+cnt = 1;
         for c = 1:length(classList)
             subFolderName = fullfile(folderName,classList{c});
             imgList = dir(fullfile(subFolderName,'*.jpg'));
@@ -96,8 +60,45 @@ for vocab_size = vocab_sizes
                 [~, desc_te{c,i}] = vl_phow(single(I),'Sizes',PHOW_Sizes,'Step',PHOW_Step);
             end
         end
+% Build visual vocabulary (codebook) for 'Bag-of-Words method'
+disp('Building visual codebook...')
+desc_sel = single(vl_colsubset(cat(2,desc_tr{:}), 10e4)); % Randomly select 100k SIFT descriptors for clustering
+% K-means clustering
+no_kmeans_initialisations = 1;
+max_iter = 10;
+vocab_sizes = [5,10,20,50,100,200,500,1000,2000];
+results_store = zeros(2,no_kmeans_initialisations,length(vocab_sizes)); % [knn, svm],[no kmeans inits],[vocab_sizes]
+time_store = zeros(no_kmeans_initialisations,length(vocab_sizes));
+vocab_idx = 1;
+for vocab_size = vocab_sizes
+    for kmeans_init = 1:no_kmeans_initialisations
+        disp(['Loop: vocab_size = ',num2str(vocab_size),', kmeans_init = ',num2str(kmeans_init)])
+        tic % start timer
+        [~, words] = kmeans(desc_sel', vocab_size, 'MaxIter', max_iter);
+        elapsed_time = toc; % stop timer
+        time_store(kmeans_init,vocab_idx) = elapsed_time;
+        % disp('Encoding Training Images...')
+        bags_of_words_training = zeros(vocab_size,150); % 150 = 10 classes * 15 images per class
+        imTrack = 1;
+        % Vector Quantisation (training images)
+        for class = 1:10
+            for image = 1:15
+                image_descriptors = desc_tr(class,image);
+                image_descriptors = image_descriptors{1};
+                closest_words = knnsearch(words,image_descriptors');
+                for k = 1:length(closest_words)
+                    bags_of_words_training(closest_words(k),imTrack) = bags_of_words_training(closest_words(k),imTrack) + 1;
+                end
+                bags_of_words_training(:,imTrack) = bags_of_words_training(:,imTrack)/length(closest_words);
+                imTrack = imTrack + 1;
+            end
+        end
+        if showImg
+            figure('Units','normalized','Position',[.05 .1 .4 .9]);
+            suptitle('Test image samples');
+        end
         % Vector Quantisation (testing images)
-        %disp('Encoding Test Images...')
+        % disp('Encoding Test Images...')
         bags_of_words_testing = zeros(vocab_size,150);
         imTrack = 1;
         % Vector Quantisation
@@ -114,14 +115,14 @@ for vocab_size = vocab_sizes
             end
         end
         % knn classification to indicate optimal vocabulary size
-        %disp('Performing kNN classification..')
+        % disp('Performing kNN classification..')
         knn_idx = knnsearch(bags_of_words_training', bags_of_words_testing');
         true_class_vector = reshape((ones(10,15).*[1:10]')',[150,1]);
         predicted_class_vector = true_class_vector(knn_idx);
         results_knn = sum(~logical(true_class_vector-predicted_class_vector))/length(true_class_vector);
         results_store(1,kmeans_init,vocab_idx) = results_knn;
         % linear SVM classification
-        %disp('Performing SVM classification..')
+        % disp('Performing SVM classification..')
         svm_model = fitcecoc(bags_of_words_training',true_class_vector,'Learners','linear');
         predicted_class_vector = predict(svm_model,bags_of_words_testing');
         results_svm = sum(~logical(true_class_vector-predicted_class_vector))/length(true_class_vector);
