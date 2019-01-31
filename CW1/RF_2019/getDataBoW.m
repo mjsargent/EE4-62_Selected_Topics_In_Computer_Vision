@@ -67,7 +67,7 @@ desc_sel = single(vl_colsubset(cat(2,desc_tr{:}), 10e4)); % Randomly select 100k
 no_kmeans_initialisations = 10;
 max_iterations = [5,10,50,100];
 vocab_sizes = [5,10,20,50,100,200,500,1000,2000,5000];
-results_store = zeros(2,no_kmeans_initialisations,length(vocab_sizes),length(max_iterations)); % [knn, svm],[no kmeans inits],[vocab_sizes]
+results_store = zeros(3,no_kmeans_initialisations,length(vocab_sizes),length(max_iterations)); % [knn, svm],[no kmeans inits],[vocab_sizes]
 time_store = zeros(2,no_kmeans_initialisations,length(vocab_sizes),length(max_iterations)); % [t_kmeans, t_quantisation], ...
 vocab_idx = 1;
 for vocab_size = vocab_sizes
@@ -114,19 +114,24 @@ for vocab_size = vocab_sizes
                 end
             end
             elapsed_time = toc; % stop timer for k-means
-            time_store(2,kmeans_init,vocab_idx) = elapsed_time;
+            time_store(2,kmeans_init,vocab_idx,iter_idx) = elapsed_time;
             % knn classification to indicate optimal vocabulary size
             knn_idx = knnsearch(bags_of_words_training', bags_of_words_testing');
             true_class_vector = reshape((ones(10,15).*[1:10]')',[150,1]);
             predicted_class_vector = true_class_vector(knn_idx);
             results_knn = sum(~logical(true_class_vector-predicted_class_vector))/length(true_class_vector);
             results_store(1,kmeans_init,vocab_idx,iter_idx) = results_knn;
+            % nonlinear SVM classification
+            t = templateSVM('KernelFunction','gaussian');
+            svm_model = fitcecoc(bags_of_words_training',true_class_vector,'Learners',t);
+            predicted_class_vector = predict(svm_model,bags_of_words_testing');
+            results_svm = sum(~logical(true_class_vector-predicted_class_vector))/length(true_class_vector);
+            results_store(2,kmeans_init,vocab_idx,iter_idx) = results_svm;
             % linear SVM classification
             svm_model = fitcecoc(bags_of_words_training',true_class_vector,'Learners','linear');
             predicted_class_vector = predict(svm_model,bags_of_words_testing');
             results_svm = sum(~logical(true_class_vector-predicted_class_vector))/length(true_class_vector);
-            results_store(2,kmeans_init,vocab_idx,iter_idx) = results_svm;
-            disp(['     ', 'kNN = ',num2str(results_knn),', SVM = ',num2str(results_svm)])
+            results_store(3,kmeans_init,vocab_idx,iter_idx) = results_svm;
         end
         iter_idx = iter_idx + 1;
     end
