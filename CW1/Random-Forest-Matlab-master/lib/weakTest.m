@@ -29,7 +29,10 @@ elseif model.classifierID== 4
     
     % RBF, distance based learner
     yhat= double(pdist2(X, model.x) < model.t);
-
+    
+elseif model.classifierID== 5
+    yhat = double(X(:, model.r(1))-X(:, model.r(2)) < model.t);
+    
 elseif model.classifierID== 0
     
     %no classifier was fit because there was no training data that reached

@@ -60,7 +60,7 @@ for classf = classifierID
             
             t= rand(1)*(tmax-tmin)+tmin;
             dec = col < t;
-            Igain = evalDecision(Y, dec, u);
+            Igain = evalDecision(Y, dec, u, opts.decChoice);
 
             if Igain>maxgain
                 maxgain = Igain;
@@ -81,7 +81,7 @@ for classf = classifierID
             w= randn(3, 1);
             
             dec = [X(:, [r1 r2]), ones(N, 1)]*w < 0;
-            Igain = evalDecision(Y, dec, u);
+            Igain = evalDecision(Y, dec, u, opts.decChoice);
             
             if Igain>maxgain
                 maxgain = Igain;
@@ -110,7 +110,7 @@ for classf = classifierID
             t2= randn(1);
             if rand(1)<0.5, t1=-inf; end
             dec= mv<t2 & mv>t1;
-            Igain = evalDecision(Y, dec, u);
+            Igain = evalDecision(Y, dec, u, opts.decChoice);
 
             if Igain>maxgain
                 maxgain = Igain;
@@ -139,7 +139,7 @@ for classf = classifierID
 
             t= rand(1)*(maxdsts - mindsts)+ mindsts;
             dec= dsts < t;
-            Igain = evalDecision(Y, dec, u);
+            Igain = evalDecision(Y, dec, u, opts.decChoice);
 
             if Igain>maxgain
                 maxgain = Igain;
@@ -147,7 +147,30 @@ for classf = classifierID
                 modelCandidate.t= t;
             end
         end
+    
+    elseif classf == 5
+        
+        for q= 1:numSplits
+            
+            %if mod(q-1,5)==0
+                r= randperm(D,2);
+                col1 = X(:, r(1));
+                col2 = X(:, r(2));
+                tmean1= median(col1);
+                tmean2= median(col2);
+            %end
+            
+            t= tmean1-tmean2;
+            dec = col1-col2 < t;
+            Igain = evalDecision(Y, dec, u, opts.decChoice);
 
+            if Igain>maxgain
+                maxgain = Igain;
+                modelCandidate.r= r;
+                modelCandidate.t= t;
+            end
+        end
+        
     else
         fprintf('Error in weak train! Classifier with ID = %d does not exist.\n', classf);
     end
@@ -164,25 +187,30 @@ end
 
 end
 
-function Igain= evalDecision(Y, dec, u)
+function Igain= evalDecision(Y, dec, u, choice)
 % gives Information Gain provided a boolean decision array for what goes
 % left or right. u is unique vector of class labels at this node
-
     YL= Y(dec);
     YR= Y(~dec);
-    H= classEntropy(Y, u);
-    HL= classEntropy(YL, u);
-    HR= classEntropy(YR, u);
+    H= classEntropy(Y, u, choice);
+    HL= classEntropy(YL, u, choice);
+    HR= classEntropy(YR, u, choice);
     Igain= H - length(YL)/length(Y)*HL - length(YR)/length(Y)*HR;
 
 end
 
 % Helper function for class entropy used with Decision Stump
-function H= classEntropy(y, u)
-
-    cdist= histc(y, u) + 1;
-    cdist= cdist/sum(cdist);
-    cdist= cdist .* log(cdist);
-    H= -sum(cdist);
-    
+function H= classEntropy(y, u, choice)
+    if choice == 1 % entropy
+        cdist= histc(y, u) + 1;
+        cdist= cdist/sum(cdist);
+        cdist= cdist .* log(cdist);
+        H= -sum(cdist);
+    elseif choice == 2 % Gini index
+        cdist= histc(y, u) + 1;
+        cdist= cdist/sum(cdist);
+        cdist= cdist .* cdist;
+        H= 1-sum(cdist);
+    end
 end
+
