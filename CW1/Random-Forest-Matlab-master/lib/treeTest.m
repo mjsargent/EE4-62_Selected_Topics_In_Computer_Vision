@@ -1,4 +1,4 @@
-function [Yhard, Ysoft] = treeTest(model, X, opts)
+function [Yhard, Ysoft, leafIdxs] = treeTest(model, X, opts)
 % Test a tree
 % X is NxD, each D-dimensional row is a data point
 % model comes from treeTrain()
@@ -60,4 +60,6 @@ for n= (nd+1)/2 : nd
     if nargout > 1
         Ysoft(ff, :)= repmat(hc_new, length(ff), 1); % CHANGED
     end
+end
+leafIdxs = dataix;
 end

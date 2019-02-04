@@ -6,15 +6,16 @@ vocab_size = 200;
 [data_train, data_test] = getData(vocab_size);
 %% 2. Random forest training
 % choose tree options
-forest_options = struct;
-forest_options.depth = 5;
-forest_options.numTrees = 10000;
-forest_options.numSplits = 30;
+% number_runs = 5;
+forest_options = struct; 
+forest_options.depth = 5; % [2,5,8,12]
+forest_options.numTrees = 10000; % [100,1000,10000]
+forest_options.numSplits = 30; % [20,50,100]
 forest_options.verbose = true; % outputs training update
-forest_options.classifierId = 5;
+forest_options.classifierId = 1; % [1,2,5]
 forest_options.classifierCommitFirst = false;
-forest_options.bagSizes = 150;
-forest_options.decChoice = 1; % 1 = entropy, 2 = Gini index
+forest_options.bagSizes = 150; % [50,100,200]
+forest_options.decChoice = 1; % [1,2] / 1 = entropy, 2 = Gini index
 % standardise data to zero mean, unit variance  === DON'T DO THIS ===
 %data_train = bsxfun(@rdivide, bsxfun(@minus, data_train, mean(data_train)), var(data_train) + 1e-10);
 %data_test = bsxfun(@rdivide, bsxfun(@minus, data_test, mean(data_train)), var(data_train) + 1e-10);
