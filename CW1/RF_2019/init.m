@@ -8,6 +8,7 @@ addpath('./internal');
 addpath('./external');
 addpath('./external/libsvm-3.18/matlab');
 addpath('../Random-Forest-Matlab-master/lib')
+addpath('../kmeans/kmeans')
 
 % initialise external libraries
 run('external/vlfeat-0.9.21/toolbox/vl_setup.m'); % vlfeat library

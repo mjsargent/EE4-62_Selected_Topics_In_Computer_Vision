@@ -5,16 +5,15 @@ init; clc;
 vocab_size = 200;
 [data_train, data_test] = getData(vocab_size);
 %% 2. Random forest training
-
 % choose tree options
 % number_runs = 5;
 depth = [2,5,8,12];
-numTree = [100,1000,10000];
-numSplits = [20,50,100];
-classifierId = [1,2,5];
+numTree = [1 10 100]%1000%[100,1000,10000];
+numSplits = [10,20]%[20,50,100];
+classifierId = [1,2,3]%[1,2,5];
 classifierCommitFirst = false;
-bagSizes = [50,100,200];
-decChoice = [2]; % / 1 = entropy, 2 = Gini index
+bagSizes = [10,20,50]%100%[50,100,200];
+decChoice = 2; % / 1 = entropy, 2 = Gini index
 % standardise data to zero mean, unit variance  === DON'T DO THIS ===
 %data_train = bsxfun(@rdivide, bsxfun(@minus, data_train, mean(data_train)), var(data_train) + 1e-10);
 %data_test = bsxfun(@rdivide, bsxfun(@minus, data_test, mean(data_train)), var(data_train) + 1e-10);
@@ -40,11 +39,12 @@ for depth_idx = 1:length(depth)
                         forest_model = forestTrain(data_train,true_class_vector,forest_options);
                         predicted_class_vector = forestTest(forest_model,data_test);
                         % results
-                        results_store(depth_idx,numTree_idx,numSplits_idx,classifierId_idx,bagSizes_idx,decChoice_idx) = sum(~logical(true_class_vector-predicted_class_vector))/length(true_class_vector);
+                        results = sum(~logical(true_class_vector-predicted_class_vector))/length(true_class_vector)
+                        results_store(depth_idx,numTree_idx,numSplits_idx,classifierId_idx,bagSizes_idx,decChoice_idx) = results;
                     end
                 end
             end
         end
     end
 end
-save('Q2_sweep_coarse.mat',results_store);
+save('Q2_sweep_coarse.mat','results_store');

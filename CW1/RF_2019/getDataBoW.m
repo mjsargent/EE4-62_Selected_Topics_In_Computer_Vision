@@ -62,10 +62,11 @@ cnt = 1;
         end
 % Build visual vocabulary (codebook) for 'Bag-of-Words method'
 disp('Building visual codebook...')
-desc_sel = single(vl_colsubset(cat(2,desc_tr{:}), 10e4)); % Randomly select 100k SIFT descriptors for clustering
+% single -> double
+desc_sel = double(vl_colsubset(cat(2,desc_tr{:}), 10e4)); % Randomly select 100k SIFT descriptors for clustering
 % K-means clustering
 no_kmeans_initialisations = 10;
-max_iterations = [5,10,50,100];
+max_iterations = 0;%[5,10,50,100];
 vocab_sizes = [5,10,20,50,100,200,500,1000,2000,5000];
 results_store = zeros(3,no_kmeans_initialisations,length(vocab_sizes),length(max_iterations)); % [knn, svm],[no kmeans inits],[vocab_sizes]
 time_store = zeros(2,no_kmeans_initialisations,length(vocab_sizes),length(max_iterations)); % [t_kmeans, t_quantisation], ...
@@ -76,7 +77,8 @@ for vocab_size = vocab_sizes
         for kmeans_init = 1:no_kmeans_initialisations
             disp(['Loop: vocab_size = ',num2str(vocab_size),', max_iter = ',num2str(max_iter),', kmeans_init = ',num2str(kmeans_init)])
             tic % start timer for k-means
-            [~, words] = kmeans(desc_sel', vocab_size, 'MaxIter', max_iter);
+            %[~, words] = kmeans(desc_sel', vocab_size, 'MaxIter', max_iter);
+            [~, words, ~] = kmeans2(desc_sel, kseeds(desc_sel,vocab_size));words = words';
             elapsed_time = toc; % stop timer for k-means
             time_store(1,kmeans_init,vocab_idx,iter_idx) = elapsed_time;
             % disp('Encoding Training Images...')
