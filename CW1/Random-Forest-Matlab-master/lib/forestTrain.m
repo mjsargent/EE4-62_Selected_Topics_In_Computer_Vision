@@ -38,12 +38,13 @@ function model = forestTrain(X, Y, opts)
         if size(X,2) ~= 128%opts.bagSizes ~= 0
             bagIdxs = randi([1,size(X,1)],opts.bagSizes,1); % added for bagging (PM)
         else
-            bagIdxs = [];
-            for image = 1:150
-                aPerm = randi([opts.imageIdxs(image),opts.imageIdxs(image+1)-1], ceil(opts.bagSizes/150),1);
-                bagIdxs = [bagIdxs; aPerm];
-            end
+%             bagIdxs = [];
+%             for image = 1:150
+%                 aPerm = randi([opts.imageIdxs(image),opts.imageIdxs(image+1)-1], ceil(opts.bagSizes/150),1);
+%                 bagIdxs = [bagIdxs; aPerm];
+%             end
             %bagIdxs = ones(length(X,1),1);
+            bagIdxs = randperm(size(X,1),min(opts.bagSizes,size(X,1)));
         end
         
         treeModels{i} = treeTrain(X(bagIdxs,:), Y(bagIdxs), opts);
