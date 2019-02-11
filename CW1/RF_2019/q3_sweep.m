@@ -77,9 +77,9 @@ train_idxs = cat(2,train_idxs{:});
 train_sample = randperm(length(trainingDescVec),100000);
 
 %% loop options
-c_depths = 8%[8,10]; % 2,5,8 % 8,10
-c_numTrees = 20%[10,20]; % 5,10,100 % 10,20
-c_numSplits = 100%[100,200]; % 20,100 % 100,200
+c_depths = [6,8,10]%[8,10]; % 2,5,8 % 8,10
+c_numTrees = [5,20,40]%[10,20]; % 5,10,100 % 10,20
+c_numSplits = [20,100]%[100,200]; % 20,100 % 100,200
 c_bagSizes = [100000]; % 10000,100000 % 100000
 
 codebook_options = struct;
@@ -88,8 +88,8 @@ codebook_options.classifierId = 1;
 codebook_options.classifierCommitFirst = false;
 codebook_options.decChoice = 1;
 
-f_depths = [7,9]; % 3,7 %7,9
-f_numTrees = [500,1000]; % 100, 500 % 500,1000
+f_depths = [6,8]; % 3,7 %7,9
+f_numTrees = [1000]; % 100, 500 % 500,1000
 f_numSplits = [100,150]; % 20,100 % 100,150
 f_bagSizes = [150];% 50, 150 % 150
 
@@ -149,7 +149,7 @@ for cd_idx = 1:length(c_depths)
                         end
                     end
                 end
-                save('q3_sweep3.mat','results_store')
+                save('q3_sweep3_peter3.mat','results_store')
             end
         end
     end
