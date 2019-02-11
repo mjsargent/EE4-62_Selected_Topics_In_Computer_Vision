@@ -44,7 +44,8 @@ function model = forestTrain(X, Y, opts)
 %                 bagIdxs = [bagIdxs; aPerm];
 %             end
             %bagIdxs = ones(length(X,1),1);
-            bagIdxs = randperm(size(X,1),min(opts.bagSizes,size(X,1)));
+            %bagIdxs = randi(size(X,1),min(opts.bagSizes,size(X,1)));
+            bagIdxs = randi(size(X,1),opts.bagSizes,1);
         end
         
         treeModels{i} = treeTrain(X(bagIdxs,:), Y(bagIdxs), opts);

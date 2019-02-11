@@ -63,7 +63,9 @@ cnt = 1;
 % Build visual vocabulary (codebook) for 'Bag-of-Words method'
 disp('Building visual codebook...')
 % single -> double
-desc_sel = double(vl_colsubset(cat(2,desc_tr{:}), 10e4)); % Randomly select 100k SIFT descriptors for clustering
+
+%%
+[desc_sel,~] = double(vl_colsubset(cat(2,desc_tr{:}), 10e4)); % Randomly select 100k SIFT descriptors for clustering
 % K-means clustering
 no_kmeans_initialisations = 10;
 max_iterations = 0;%[5,10,50,100];

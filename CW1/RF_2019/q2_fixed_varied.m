@@ -6,14 +6,14 @@ vocab_size = 200;
 [data_train, data_test] = getData(vocab_size);
 %% 2. Random forest training
 % choose tree options
-number_runs = 10;
-depth = [2,5,8];
-numTree = [10,100,1000,10000];
-numSplits = [20,50,100];
-classifierId = [1,2,5];
+number_runs = 10; 
+depth = [8]; % 8 [1,2,3,4,5,6,7,8,9,10,11,12]
+numTree = [1000];
+numSplits = [100]; % 100
+classifierId = [1]; % 1
 classifierCommitFirst = false;
-bagSizes = [50,100,200];
-decChoice = [1]; % / 1 = entropy, 2 = Gini index
+bagSizes = [200]; % 200
+decChoice = [1,2]; % / 1 = entropy, 2 = Gini index
 % standardise data to zero mean, unit variance  === DON'T DO THIS ===
 %data_train = bsxfun(@rdivide, bsxfun(@minus, data_train, mean(data_train)), var(data_train) + 1e-10);
 %data_test = bsxfun(@rdivide, bsxfun(@minus, data_test, mean(data_train)), var(data_train) + 1e-10);
@@ -29,6 +29,7 @@ forest_options.classifierCommitFirst = false;
 for depth_idx = 1:length(depth)
     forest_options.depth = depth(depth_idx);
     for numTree_idx = 1:length(numTree)
+        numTree_idx
         forest_options.numTrees = numTree(numTree_idx);
         for numSplits_idx = 1:length(numSplits)
             forest_options.numSplits = numSplits(numSplits_idx);
@@ -37,8 +38,10 @@ for depth_idx = 1:length(depth)
                 for bagSizes_idx = 1:length(bagSizes)
                     forest_options.bagSizes = bagSizes(bagSizes_idx);
                     for decChoice_idx = 1:length(decChoice)
+                        forest_options.decChoice = decChoice(decChoice_idx)
                         for run_idx = 1:number_runs
-                            forest_options.decChoice = decChoice_idx(decChoice_idx);
+                            run_idx
+                            forest_options.decChoice = decChoice(decChoice_idx);
                             % train the forest
                             tic
                             forest_model = forestTrain(data_train,true_class_vector,forest_options);
@@ -58,4 +61,4 @@ for depth_idx = 1:length(depth)
         end
     end
 end
-save('Q2_sweep_coarse_entr.mat','results_store');
+save('Q2_sweep_decision.mat','results_store','train_time_store','test_time_store');

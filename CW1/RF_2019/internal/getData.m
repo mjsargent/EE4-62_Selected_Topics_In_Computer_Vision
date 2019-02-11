@@ -41,11 +41,8 @@ disp('Building visual codebook...')
 % Build visual vocabulary (codebook) for 'Bag-of-Words method'
 desc_sel = double(vl_colsubset(cat(2,desc_tr{:}), 10e4)); % Randomly select 100k SIFT descriptors for clustering
 % K-means clustering
-tic
 %[~, words] = kmeans(desc_sel', vocab_size_in);
 [~, words, ~] = kmeans2(desc_sel, kseeds(desc_sel,vocab_size_in));words = words';
-size(words)
-y = toc
 disp('Encoding Training Images...')
 bags_of_words_training = zeros(vocab_size_in,150); % 150 = 10 classes * 15 images per class
 imTrack = 1;
