@@ -77,51 +77,57 @@ train_idxs = cat(2,train_idxs{:});
 train_sample = randperm(length(trainingDescVec),100000);
 
 %% loop options
-c_depths = [6,8,10]%[8,10]; % 2,5,8 % 8,10
-c_numTrees = [5,20,40]%[10,20]; % 5,10,100 % 10,20
-c_numSplits = [20,100]%[100,200]; % 20,100 % 100,200
-c_bagSizes = [100000]; % 10000,100000 % 100000
+c_depths = [6,7,8,9,10];%; % 2,5,8 % 8,10 % [8,10]
+c_numTrees = [10];%%[10,20]; % 5,10,100 % 10,20 % [5,20,40]
+c_numSplits = [100];%[100,200]; % 20,100 % 100,200 % [20,100]%
+c_bagSizes = [150000]; % 10000,100000 % 100000
 
 codebook_options = struct;
-codebook_options.verbose = false; % outputs training update
+codebook_options.verbose = true; % outputs training update
 codebook_options.classifierId = 1;
 codebook_options.classifierCommitFirst = false;
 codebook_options.decChoice = 1;
 
-f_depths = [6,8]; % 3,7 %7,9
+f_depths = [7]; % 3,7 %7,9 % 6,8
 f_numTrees = [1000]; % 100, 500 % 500,1000
-f_numSplits = [100,150]; % 20,100 % 100,150
+f_numSplits = [150]; % 20,100 % 100,150
 f_bagSizes = [150];% 50, 150 % 150
 
 forest_options = struct;
-forest_options.verbose = false; % outputs training update
+forest_options.verbose = true; % outputs training update
 forest_options.classifierId = 1;
 forest_options.classifierCommitFirst = false;
 forest_options.decChoice = 1;
 true_class_vector = reshape((ones(10,15).*[1:10]')',[150,1]);
 %%
-
+numLoops = 10;
 results_store = zeros(length(c_depths),length(c_numTrees),length(c_numSplits),length(c_bagSizes),...
-                 length(f_depths),length(f_numTrees),length(f_numSplits),length(f_bagSizes));
-
+                 length(f_depths),length(f_numTrees),length(f_numSplits),length(f_bagSizes),numLoops);
+train_time_store = zeros(length(c_depths),length(c_numTrees),length(c_numSplits),length(c_bagSizes),numLoops);
+quant_time_store = zeros(length(c_depths),length(c_numTrees),length(c_numSplits),length(c_bagSizes),numLoops);
+for loop_idx = 1:numLoops
 for cd_idx = 1:length(c_depths)
-    cd_idx
+    cd_idx;
     codebook_options.depth = c_depths(cd_idx);
     for ct_idx = 1:length(c_numTrees)
-        ct_idx
+        ct_idx;
         codebook_options.numTrees = c_numTrees(ct_idx);
         for cn_idx = 1:length(c_numSplits)
-            cn_idx
+            cn_idx;
             codebook_options.numSplits = c_numSplits(cn_idx);
             for cb_idx = 1:length(c_bagSizes)
-                cb_idx
+                cb_idx;
                 codebook_options.bagSizes = c_bagSizes(cb_idx);
                 
                 % train RF codebook
                 trainingData = zeros(codebook_options.numTrees*2^(codebook_options.depth-1),150)';
                 testingData = zeros(codebook_options.numTrees*2^(codebook_options.depth-1),150)';
                 %codebook_model = forestTrain(trainingDescVec(train_sample,:),trainingDescClass(train_sample),codebook_options);
+                tic
                 codebook_model = forestTrain(desc_sel',train_idxs(t_ind)',codebook_options);
+                time = toc;
+                train_time_store(cd_idx,ct_idx,cn_idx,cb_idx,loop_idx) = time;
+                tic
                 for class = 1:10
                     for image = 1:15
                         idx = (class-1)*15 + image;
@@ -129,7 +135,8 @@ for cd_idx = 1:length(c_depths)
                         testingData(idx,:) = findImageHistogram(codebook_model, desc_te{class,image}', codebook_options);
                     end
                 end
-
+                time = toc;
+                quant_time_store(cd_idx,ct_idx,cn_idx,cb_idx,loop_idx) = time;
                 for fd_idx = 1:length(f_depths)
                     forest_options.depth = f_depths(fd_idx);
                     for ft_idx = 1:length(f_numTrees)
@@ -144,13 +151,14 @@ for cd_idx = 1:length(c_depths)
                                 predicted_class_vector = forestTest(forest_model,testingData);
                                 % results
                                 results = sum(~logical(true_class_vector-predicted_class_vector))/length(true_class_vector)
-                                results_store(cd_idx,ct_idx,cn_idx,cb_idx,fd_idx,ft_idx,fn_idx,fb_idx) = results;
+                                results_store(cd_idx,ct_idx,cn_idx,cb_idx,fd_idx,ft_idx,fn_idx,fb_idx,loop_idx) = results;
                             end
                         end
                     end
                 end
-                save('q3_sweep3_peter3.mat','results_store')
+                save('q3_fix_vary_cdepth.mat','results_store','train_time_store','quant_time_store')
             end
         end
     end
+end
 end
