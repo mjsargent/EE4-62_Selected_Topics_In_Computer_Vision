@@ -140,7 +140,7 @@ optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=opt.lr, betas=(opt
 
 Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 
-ratios = [1,2,5,10]
+ratios = [2]
 
 # ----------
 #  Training
@@ -162,7 +162,10 @@ for rat in ratios:
 
             # Configure input
             real_imgs = Variable(imgs.type(Tensor))
+            z = Variable(Tensor(np.random.normal(0, 1, (imgs.shape[0], opt.latent_dim))))
 
+                # Generate a batch of images
+            gen_imgs = generator(z)
             # -----------------
             #  Train Generator
             # -----------------
@@ -171,10 +174,7 @@ for rat in ratios:
                 optimizer_G.zero_grad()
 
                 # Sample noise as generator input
-                z = Variable(Tensor(np.random.normal(0, 1, (imgs.shape[0], opt.latent_dim))))
-
-                # Generate a batch of images
-                gen_imgs = generator(z)
+               
 
                 # Loss measures generator's ability to fool the discriminator
                 g_loss = adversarial_loss(discriminator(gen_imgs), valid)
